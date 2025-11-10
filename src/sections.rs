@@ -338,6 +338,49 @@ pub struct Exception {
     pub ty: TypeId,
 }
 
+/// A single [table](https://webassembly.github.io/spec/core/binary/modules.html#binary-table).
+#[derive(WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+pub struct Table {
+    table_type: TableType,
+    expr: Option<Expression>,
+}
+
+impl Encode for Table {
+    fn encode(&self, w: &mut impl std::io::Write) -> std::io::Result<()> {
+        if let Some(expr) = &self.expr {
+            0x40u8.encode(w)?; // 0x40 indicates a table with init expression
+            0x00u8.encode(w)?;
+            self.table_type.encode(w)?;
+            expr.encode(w)?;
+        } else {
+            self.table_type.encode(w)?;
+        }
+        Ok(())
+    }
+}
+
+impl Decode for Table {
+    fn decode(r: &mut impl std::io::Read) -> Result<Self, DecodeError> {
+        // 0x40 indicates a table with init expression
+        let discriminant1 = u8::decode(r)?;
+        if discriminant1 == 0x40 {
+            let discriminant2 = u8::decode(r)?;
+            if discriminant2 == 0x00 {
+                return Ok(Self {
+                    table_type: TableType::decode(r)?,
+                    expr: Some(Expression::decode(r)?),
+                });
+            }
+            return Err(DecodeError::unsupported_discriminant::<Self>(discriminant2));
+        }
+        // table without init expression
+        return Ok(Self {
+            table_type: TableType::decode(&mut [discriminant1].as_ref())?,
+            expr: None,
+        });
+    }
+}
+
 /// [Function body](https://webassembly.github.io/spec/core/binary/modules.html#binary-func).
 #[derive(Wasmbin, WasmbinCountable, Debug, Default, PartialEq, Eq, Hash, Clone, Visit)]
 pub struct FuncBody {
@@ -521,7 +564,7 @@ define_sections! {
     /// [Function section](https://webassembly.github.io/spec/core/binary/modules.html#function-section).
     Function(Vec<super::TypeId>) = 3,
     /// [Table section](https://webassembly.github.io/spec/core/binary/modules.html#table-section).
-    Table(Vec<super::TableType>) = 4,
+    Table(Vec<super::Table>) = 4,
     /// [Memory section](https://webassembly.github.io/spec/core/binary/modules.html#memory-section).
     Memory(Vec<super::MemType>) = 5,
     /// [Exception tag section](https://webassembly.github.io/exception-handling/core/binary/modules.html#tag-section).
