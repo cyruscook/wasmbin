@@ -24,12 +24,10 @@ once_cell = "1.21.3"
 [features]
 default = []
 proposals = [
-    "exception-handling",
     "extended-name-section",
     "threads",
     "custom-page-sizes",
 ]
-exception-handling = []
 extended-name-section = []
 threads = []
 custom-page-sizes = []

@@ -176,10 +176,6 @@ impl Tests {
             };
         }
 
-        read_proposal_tests!(? "exception-handling");
-        read_proposal_tests!("extended-const");
-        read_proposal_tests!("multi-memory");
-        read_proposal_tests!("tail-call");
         read_proposal_tests!(? "threads");
         read_proposal_tests!(? "custom-page-sizes");
 

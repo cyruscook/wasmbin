@@ -12,7 +12,6 @@ From there you can explore the module contents by simply looking up the nested f
 
 Following WebAssembly proposals are supported in addition to the core spec and can be enabled via corresponding Cargo features:
 
-- [`exception-handling`](https://github.com/WebAssembly/exception-handling)
 - [`extended-name-section`](https://github.com/WebAssembly/extended-name-section)
 - [`threads`](https://github.com/WebAssembly/threads)
 - [`custom-page-sizes`](https://github.com/WebAssembly/custom-page-sizes)
