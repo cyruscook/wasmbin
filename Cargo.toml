@@ -36,7 +36,7 @@ nightly = []
 [dev-dependencies]
 criterion = "0.5.1"
 libtest-mimic = "0.8.1"
-wast = "229.0.0"
+wast = "240.0.0"
 anyhow = { version = "1.0.98", features = ["backtrace"] }
 tempfile = "3.19.1"
 indexmap = { version = "2.9.0", features = ["rayon"] }
