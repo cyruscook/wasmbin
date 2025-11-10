@@ -24,15 +24,12 @@ use wasmbin::Module;
 #[derive(Subcommand)]
 enum DumpSection {
     All,
-    Custom {
-        name: String,
-    },
+    Custom { name: String },
     Type,
     Import,
     Function,
     Table,
     Memory,
-    #[cfg(feature = "exception-handling")]
     Exception,
     Global,
     Export,
@@ -97,7 +94,6 @@ fn main() -> anyhow::Result<()> {
         DumpSection::Function => Box::new(|s| s.kind() == Kind::Function),
         DumpSection::Table => Box::new(|s| s.kind() == Kind::Table),
         DumpSection::Memory => Box::new(|s| s.kind() == Kind::Memory),
-        #[cfg(feature = "exception-handling")]
         DumpSection::Exception => Box::new(|s| s.kind() == Kind::Exception),
         DumpSection::Global => Box::new(|s| s.kind() == Kind::Global),
         DumpSection::Export => Box::new(|s| s.kind() == Kind::Export),

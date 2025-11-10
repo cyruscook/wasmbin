@@ -291,7 +291,6 @@ encode_decode_as!(MemType, {
 pub enum RefType {
     Func = 0x70,
     Extern = 0x6F,
-    #[cfg(feature = "exception-handling")]
     Exception = 0x69,
 }
 
@@ -310,7 +309,6 @@ pub struct GlobalType {
 }
 
 /// [Exception tag type](https://webassembly.github.io/exception-handling/core/binary/types.html#tag-types).
-#[cfg(feature = "exception-handling")]
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 #[wasmbin(discriminant = 0x00)]
 pub struct ExceptionType {
