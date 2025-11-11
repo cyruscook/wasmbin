@@ -328,6 +328,10 @@ pub enum SIMD {
     F32x4Max = 233,
     F32x4Pmin = 234,
     F32x4Pmax = 235,
+    F32x4RelaxedMin = 269,
+    F32x4RelaxedMax = 270,
+    F32x4RelaxedMAdd = 261,
+    F32x4RelaxedNMAdd = 262,
 
     F64x2Ceil = 116,
     F64x2Floor = 117,
