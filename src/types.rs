@@ -124,8 +124,9 @@ impl Debug for FuncType {
 /// [Limits](https://webassembly.github.io/spec/core/binary/types.html#limits) type.
 #[derive(PartialEq, Eq, Hash, Clone, Visit)]
 pub struct Limits {
-    pub min: u32,
-    pub max: Option<u32>,
+    pub min: u64,
+    pub max: Option<u64>,
+    pub is_64: bool,
 }
 
 impl Debug for Limits {
@@ -141,13 +142,17 @@ impl Debug for Limits {
 #[derive(Wasmbin)]
 #[repr(u8)]
 enum LimitsRepr {
-    Min { min: u32 } = 0x00,
-    MinMax { min: u32, max: u32 } = 0x01,
+    Min { min: u64 } = 0x00,
+    MinMax { min: u64, max: u64 } = 0x01,
+    Min64 { min: u64 } = 0x04,
+    MinMax64 { min: u64, max: u64 } = 0x05,
 }
 
 encode_decode_as!(Limits, {
-    (Limits { min, max: None }) <=> (LimitsRepr::Min { min }),
-    (Limits { min, max: Some(max) }) <=> (LimitsRepr::MinMax { min, max }),
+    (Limits { min, max: None, is_64: false }) <=> (LimitsRepr::Min { min }),
+    (Limits { min, max: Some(max), is_64: false }) <=> (LimitsRepr::MinMax { min, max }),
+    (Limits { min, max: None, is_64: true }) <=> (LimitsRepr::Min64 { min }),
+    (Limits { min, max: Some(max), is_64: true }) <=> (LimitsRepr::MinMax64 { min, max }),
 });
 
 #[cfg(any(feature = "threads", feature = "custom-page-sizes"))]
@@ -322,7 +327,8 @@ impl Decode for HeapType {
         // If it wasn't an abstract heap type, decode as a type index (s33).
         let buf = [item];
         let mut r = std::io::Read::chain(&buf[..], r);
-        let as_i64 = i64::decode(&mut r)?;
+        let as_i64 = i64::decode(&mut r)
+            .map_err(|err| err.in_path(PathItem::Variant("HeapType::TypeIndex")))?;
         // These indices are encoded as positive signed integers.
         // Convert them to unsigned integers and error out if they're out of range.
         let index = u32::try_from(as_i64)?;
