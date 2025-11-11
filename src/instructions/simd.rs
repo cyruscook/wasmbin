@@ -126,6 +126,7 @@ pub enum SIMD {
     // Shuffle instructions
     I8x16Shuffle([LaneId32; 16]) = 13,
     I8x16Swizzle = 14,
+    I8x16RelaxedSwizzle = 256,
 
     // Lane instructions
     I8x16ExtractLaneS(LaneId16) = 21,
