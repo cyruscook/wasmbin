@@ -15,7 +15,7 @@
 // limitations under the License.
 
 use crate::builtins::FloatConst;
-use crate::indices::{FuncId, GlobalId, LabelId, LocalId, MemId, TableId, TypeId};
+use crate::indices::{DataId, ElemId, FuncId, GlobalId, LabelId, LocalId, MemId, TableId, TypeId};
 use crate::io::{
     encode_decode_as, Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin,
 };
@@ -170,6 +170,32 @@ pub enum RefTypeOp {
     TestNull(HeapType) = 21,
     Cast(HeapType) = 22,
     CastNull(HeapType) = 23,
+    // [Aggregate instructions](https://webassembly.github.io/spec/core/binary/instructions.html#aggregate-instructions).
+    StructNew(TypeId) = 0,
+    StructNewDefault(TypeId) = 1,
+    StructGet(TypeId, u32) = 2,
+    StructGetS(TypeId, u32) = 3,
+    StructGetU(TypeId, u32) = 4,
+    StructSet(TypeId, u32) = 5,
+    ArrayNew(TypeId) = 6,
+    ArrayNewDefault(TypeId) = 7,
+    ArrayNewFixed(TypeId, u32) = 8,
+    ArrayNewData(TypeId, DataId) = 9,
+    ArrayNewElem(TypeId, ElemId) = 10,
+    ArrayGet(TypeId) = 11,
+    ArrayGetS(TypeId) = 12,
+    ArrayGetU(TypeId) = 13,
+    ArraySet(TypeId) = 14,
+    ArrayLen = 15,
+    ArrayFill(TypeId) = 16,
+    ArrayCopy(TypeId, TypeId) = 17,
+    ArrayInitData(TypeId, DataId) = 18,
+    ArrayInitElem(TypeId, ElemId) = 19,
+    AnyConvertExtern = 26,
+    ExternConvertAny = 27,
+    RefI31 = 28,
+    I31GetS = 29,
+    I31GetU = 30,
     /// [Control instructions](https://webassembly.github.io/spec/core/binary/instructions.html#control-instructions) that cast.
     BranchOnCast {
         cast_op: CastOp,
