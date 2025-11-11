@@ -289,9 +289,63 @@ encode_decode_as!(MemType, {
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 #[repr(u8)]
 pub enum RefType {
-    Func = 0x70,
-    Extern = 0x6F,
+    NullableHeapType(AbstractHeapType) = 0x63,
+    HeapType(AbstractHeapType) = 0x64,
+    AbstractHeapType(AbstractHeapType),
+}
+
+/// [Heap type](https://webassembly.github.io/spec/core/binary/types.html#heap-types).
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Visit)]
+pub enum HeapType {
+    Abstract(AbstractHeapType),
+    TypeIndex(TypeId),
+}
+
+impl Encode for HeapType {
+    fn encode(&self, w: &mut impl std::io::Write) -> std::io::Result<()> {
+        match self {
+            HeapType::Abstract(abs_ty) => abs_ty.encode(w),
+            HeapType::TypeIndex(type_id) => type_id.encode(w),
+        }
+    }
+}
+
+impl Decode for HeapType {
+    fn decode(r: &mut impl std::io::Read) -> Result<Self, DecodeError> {
+        let item = u8::decode(r)?;
+        // First try to decode as an abstract heap type.
+        if let Some(abs_ty) = AbstractHeapType::maybe_decode_with_discriminant(item, r)
+            .map_err(|err| err.in_path(PathItem::Variant("HeapType::Abstract")))?
+        {
+            return Ok(HeapType::Abstract(abs_ty));
+        };
+        // If it wasn't an abstract heap type, decode as a type index (s33).
+        let buf = [item];
+        let mut r = std::io::Read::chain(&buf[..], r);
+        let as_i64 = i64::decode(&mut r)?;
+        // These indices are encoded as positive signed integers.
+        // Convert them to unsigned integers and error out if they're out of range.
+        let index = u32::try_from(as_i64)?;
+        Ok(HeapType::TypeIndex(index.into()))
+    }
+}
+
+/// [Abstract heap type](https://webassembly.github.io/spec/core/binary/types.html#binary-absheaptype).
+#[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+#[repr(u8)]
+pub enum AbstractHeapType {
     Exception = 0x69,
+    Array = 0x6A,
+    Struct = 0x6B,
+    I31 = 0x6C,
+    Eq = 0x6D,
+    Any = 0x6E,
+    Extern = 0x6F,
+    Func = 0x70,
+    None = 0x71,
+    NoExtern = 0x72,
+    NoFunc = 0x73,
+    NoException = 0x74,
 }
 
 /// [Table type](https://webassembly.github.io/spec/core/binary/types.html#table-types).
