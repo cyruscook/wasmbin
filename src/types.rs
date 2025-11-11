@@ -289,8 +289,8 @@ encode_decode_as!(MemType, {
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 #[repr(u8)]
 pub enum RefType {
-    NullableHeapType(AbstractHeapType) = 0x63,
-    HeapType(AbstractHeapType) = 0x64,
+    NullableHeapType(HeapType) = 0x63,
+    HeapType(HeapType) = 0x64,
     AbstractHeapType(AbstractHeapType),
 }
 
