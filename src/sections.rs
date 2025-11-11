@@ -22,7 +22,7 @@ use crate::indices::{FuncId, GlobalId, LocalId, MemId, TableId, TypeId};
 use crate::instructions::Expression;
 use crate::io::{Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin};
 use crate::types::ExceptionType;
-use crate::types::{FuncType, GlobalType, MemType, RefType, TableType, ValueType};
+use crate::types::{GlobalType, MemType, RecursiveType, RefType, TableType, ValueType};
 use crate::visit::{Visit, VisitError};
 use custom_debug::Debug as CustomDebug;
 use std::convert::TryFrom;
@@ -558,7 +558,7 @@ define_sections! {
     /// [Custom section](https://webassembly.github.io/spec/core/binary/modules.html#custom-section).
     Custom(super::CustomSection) = 0,
     /// [Type section](https://webassembly.github.io/spec/core/binary/modules.html#type-section).
-    Type(Vec<super::FuncType>) = 1,
+    Type(Vec<super::RecursiveType>) = 1,
     /// [Import section](https://webassembly.github.io/spec/core/binary/modules.html#import-section).
     Import(Vec<super::Import>) = 2,
     /// [Function section](https://webassembly.github.io/spec/core/binary/modules.html#function-section).

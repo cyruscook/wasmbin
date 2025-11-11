@@ -29,13 +29,14 @@ const OP_CODE_EMPTY_BLOCK: u8 = 0x40;
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 #[repr(u8)]
 pub enum ValueType {
-    /// [SIMD vector type](https://webassembly.github.io/spec/core/binary/types.html#vector-types).
+    /// [Vector types](https://webassembly.github.io/spec/core/binary/types.html#binary-vectype).
     V128 = 0x7B,
+    // [Number types](https://webassembly.github.io/spec/core/binary/types.html#binary-numtype).
     F64 = 0x7C,
     F32 = 0x7D,
     I64 = 0x7E,
     I32 = 0x7F,
-    /// [Reference type](https://webassembly.github.io/spec/core/binary/types.html#reference-types).
+    /// [Reference type](https://webassembly.github.io/spec/core/binary/types.html#binary-reftype).
     Ref(RefType),
 }
 
@@ -373,4 +374,46 @@ pub struct GlobalType {
 #[wasmbin(discriminant = 0x00)]
 pub struct ExceptionType {
     pub func_type: TypeId,
+}
+
+/// [Recursive type](https://webassembly.github.io/spec/core/binary/types.html#binary-rectype).
+#[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+#[repr(u8)]
+pub enum RecursiveType {
+    SubTypes(Vec<SubType>) = 0x4E,
+    SubType(SubType),
+}
+
+/// [Sub type](https://webassembly.github.io/spec/core/binary/types.html#binary-subtype).
+#[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+#[repr(u8)]
+pub enum SubType {
+    FinalSubType(Vec<TypeId>, CompositeType) = 0x4F,
+    SubType(Vec<TypeId>, CompositeType) = 0x50,
+    FinalEmptySubType(CompositeType),
+}
+
+/// [Composite type](https://webassembly.github.io/spec/core/binary/types.html#binary-comptype).
+#[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+#[repr(u8)]
+pub enum CompositeType {
+    ArrayType(FieldType) = 0x5E,
+    StructType(Vec<FieldType>) = 0x5f,
+    FuncType(Vec<ValueType>, Vec<ValueType>) = 0x60,
+}
+
+/// [Field type](https://webassembly.github.io/spec/core/binary/types.html#binary-fieldtype).
+#[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+pub struct FieldType {
+    pub storage_type: StorageType,
+    pub mutable: bool,
+}
+
+/// [Storage type](https://webassembly.github.io/spec/core/binary/types.html#binary-storagetype).
+#[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+#[repr(u8)]
+pub enum StorageType {
+    ValueType(ValueType),
+    I16 = 0x77,
+    I8 = 0x78,
 }
