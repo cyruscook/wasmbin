@@ -221,7 +221,7 @@ encode_decode_as!(CastOp, {
     (CastOp { from_nullable: false, to_nullable: false }) <=> 0x00,
     (CastOp { from_nullable: true, to_nullable: false }) <=> 0x01,
     (CastOp { from_nullable: false, to_nullable: true }) <=> 0x02,
-    (CastOp { from_nullable: true, to_nullable: true }) <=> 0x04,
+    (CastOp { from_nullable: true, to_nullable: true }) <=> 0x03,
 }, |discriminant| {
     Err(DecodeError::unsupported_discriminant::<CastOp>(discriminant))
 });
