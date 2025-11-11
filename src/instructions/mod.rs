@@ -119,7 +119,7 @@ impl crate::builtins::WasmbinCountable for Expression {}
 pub struct MemArg {
     pub align_log2: u32,
     pub memory: MemId,
-    pub offset: u32,
+    pub offset: u64,
 }
 
 const MULTI_MEMORY_FLAG: u32 = 1 << 6;
@@ -148,7 +148,7 @@ impl Decode for MemArg {
         Ok(Self {
             align_log2,
             memory,
-            offset: u32::decode(r)?,
+            offset: u64::decode(r)?,
         })
     }
 }
