@@ -16,7 +16,9 @@
 
 use crate::builtins::FloatConst;
 use crate::indices::{FuncId, GlobalId, LabelId, LocalId, MemId, TableId, TypeId};
-use crate::io::{Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin};
+use crate::io::{
+    encode_decode_as, Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin,
+};
 use crate::types::{BlockType, HeapType, ValueType};
 use crate::visit::Visit;
 use thiserror::Error;
@@ -160,15 +162,43 @@ pub struct CallIndirect {
     pub table: TableId,
 }
 
-/// [Reference instructions](https://webassembly.github.io/spec/core/binary/instructions.html#reference-instructions) that test or cast.
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 #[repr(u32)]
 pub enum RefTypeOp {
+    /// [Reference instructions](https://webassembly.github.io/spec/core/binary/instructions.html#reference-instructions).
     Test(HeapType) = 20,
     TestNull(HeapType) = 21,
     Cast(HeapType) = 22,
     CastNull(HeapType) = 23,
+    /// [Control instructions](https://webassembly.github.io/spec/core/binary/instructions.html#control-instructions) that cast.
+    BranchOnCast {
+        cast_op: CastOp,
+        label_idx: LabelId,
+        heap_type1: HeapType,
+        heap_type2: HeapType,
+    } = 24,
+    BranchOnCastFail {
+        cast_op: CastOp,
+        label_idx: LabelId,
+        heap_type1: HeapType,
+        heap_type2: HeapType,
+    } = 25,
 }
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Visit)]
+pub struct CastOp {
+    from_nullable: bool,
+    to_nullable: bool,
+}
+
+encode_decode_as!(CastOp, {
+    (CastOp { from_nullable: false, to_nullable: false }) <=> 0x00,
+    (CastOp { from_nullable: true, to_nullable: false }) <=> 0x01,
+    (CastOp { from_nullable: false, to_nullable: true }) <=> 0x02,
+    (CastOp { from_nullable: true, to_nullable: true }) <=> 0x04,
+}, |discriminant| {
+    Err(DecodeError::unsupported_discriminant::<CastOp>(discriminant))
+});
 
 /// WebAssembly [instruction set](https://webassembly.github.io/spec/core/binary/instructions.html).
 ///
