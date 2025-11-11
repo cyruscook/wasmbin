@@ -207,6 +207,8 @@ pub enum Instruction {
     Select = 0x1B,
     SelectWithTypes(Vec<ValueType>) = 0x1C,
     TryTable(TryTable) = 0x1F,
+    BranchOnNull(LabelId) = 0xD5,
+    BranchOnNonNull(LabelId) = 0xD6,
     LocalGet(LocalId) = 0x20,
     LocalSet(LocalId) = 0x21,
     LocalTee(LocalId) = 0x22,
