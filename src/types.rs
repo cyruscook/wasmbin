@@ -324,7 +324,7 @@ impl Decode for HeapType {
             .map_err(|err| err.in_path(PathItem::Variant("HeapType::Abstract")))?
         {
             return Ok(HeapType::Abstract(abs_ty));
-        };
+        }
         // If it wasn't an abstract heap type, decode as a type index (s33).
         let buf = [item];
         let mut r = std::io::Read::chain(&buf[..], r);
