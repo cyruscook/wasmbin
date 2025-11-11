@@ -352,10 +352,10 @@ pub enum SIMD {
     F64x2RelaxedMax = 272,
     F64x2RelaxedMadd = 263,
     F64x2RelaxedNmadd = 264,
-    I8X16RelaxedLaneselect = 265,
-    I16X8RelaxedLaneselect = 266,
-    I32X4RelaxedLaneselect = 267,
-    I64X2RelaxedLaneselect = 268,
+    I8x16RelaxedLaneselect = 265,
+    I16x8RelaxedLaneselect = 266,
+    I32x4RelaxedLaneselect = 267,
+    I64x2RelaxedLaneselect = 268,
 
     F32x4DemoteF64x2Zero = 94,
     F64x2PromoteLowF32x4 = 95,
@@ -367,4 +367,8 @@ pub enum SIMD {
     I32x4TruncSatF64x2UZero = 253,
     F64x2ConvertLowI32x4S = 254,
     F64x2ConvertLowI32x4U = 255,
+    I32x4RelaxedTruncSF32x4 = 257,
+    I32x4RelaxedTruncUF32x4 = 258,
+    I32x4RelaxedTruncSZeroF64x2 = 259,
+    I32x4RelaxedTruncUZeroF64x2 = 260,
 }
