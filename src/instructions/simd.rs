@@ -260,10 +260,12 @@ pub enum SIMD {
     I16x8MaxS = 152,
     I16x8MaxU = 153,
     I16x8AvgrU = 155,
+    I16x8RelaxedQ15mulrS = 273,
     I16x8ExtmulLowI8x16S = 156,
     I16x8ExtmulHighI8x16S = 157,
     I16x8ExtmulLowI8x16U = 158,
     I16x8ExtmulHighI8x16U = 159,
+    I16x8RelaxedDotSI8x16 = 274,
 
     I32x4ExtaddPairwiseI16x8S = 126,
     I32x4ExtaddPairwiseI16x8U = 127,
