@@ -364,6 +364,7 @@ impl Decode for Table {
         // 0x40 indicates a table with init expression
         let discriminant1 = u8::decode(r)?;
         if discriminant1 == 0x40 {
+            // Second discriminant reserved for future extensions
             let discriminant2 = u8::decode(r)?;
             if discriminant2 == 0x00 {
                 return Ok(Self {
@@ -373,9 +374,11 @@ impl Decode for Table {
             }
             return Err(DecodeError::unsupported_discriminant::<Self>(discriminant2));
         }
-        // table without init expression
+        // Table without init expression
+        let buf = [discriminant1];
+        let mut r = std::io::Read::chain(&buf[..], r);
         return Ok(Self {
-            table_type: TableType::decode(&mut [discriminant1].as_ref())?,
+            table_type: TableType::decode(&mut r)?,
             expr: None,
         });
     }
