@@ -165,7 +165,7 @@ pub struct CallIndirect {
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 #[repr(u32)]
 pub enum RefTypeOp {
-    /// [Reference instructions](https://webassembly.github.io/spec/core/binary/instructions.html#reference-instructions).
+    // [Reference instructions](https://webassembly.github.io/spec/core/binary/instructions.html#reference-instructions).
     Test(HeapType) = 20,
     TestNull(HeapType) = 21,
     Cast(HeapType) = 22,
@@ -196,7 +196,7 @@ pub enum RefTypeOp {
     RefI31 = 28,
     I31GetS = 29,
     I31GetU = 30,
-    /// [Control instructions](https://webassembly.github.io/spec/core/binary/instructions.html#control-instructions) that cast.
+    // [Control instructions](https://webassembly.github.io/spec/core/binary/instructions.html#control-instructions) that cast.
     BranchOnCast {
         cast_op: CastOp,
         label_idx: LabelId,
