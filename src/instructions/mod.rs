@@ -201,6 +201,8 @@ pub enum Instruction {
     CallIndirect(CallIndirect) = 0x11,
     ReturnCall(FuncId) = 0x12,
     ReturnCallIndirect(CallIndirect) = 0x13,
+    CallRef(TypeId) = 0x14,
+    ReturnCallRef(TypeId) = 0x15,
     Drop = 0x1A,
     Select = 0x1B,
     SelectWithTypes(Vec<ValueType>) = 0x1C,
