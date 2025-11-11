@@ -17,7 +17,7 @@
 use crate::builtins::FloatConst;
 use crate::indices::{FuncId, GlobalId, LabelId, LocalId, MemId, TableId, TypeId};
 use crate::io::{Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin};
-use crate::types::{BlockType, HeapType, RefType, ValueType};
+use crate::types::{BlockType, HeapType, ValueType};
 use crate::visit::Visit;
 use thiserror::Error;
 
@@ -158,6 +158,16 @@ impl Decode for MemArg {
 pub struct CallIndirect {
     pub ty: TypeId,
     pub table: TableId,
+}
+
+/// [Reference instructions](https://webassembly.github.io/spec/core/binary/instructions.html#reference-instructions) that test or cast.
+#[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+#[repr(u32)]
+pub enum RefTypeOp {
+    Test(HeapType) = 20,
+    TestNull(HeapType) = 21,
+    Cast(HeapType) = 22,
+    CastNull(HeapType) = 23,
 }
 
 /// WebAssembly [instruction set](https://webassembly.github.io/spec/core/binary/instructions.html).
@@ -362,6 +372,9 @@ pub enum Instruction {
     RefNull(HeapType) = 0xD0,
     RefIsNull = 0xD1,
     RefFunc(FuncId) = 0xD2,
+    RefEq = 0xD3,
+    RefAsNonNull = 0xD4,
+    RefTypeOp(RefTypeOp) = 0xFB,
     Misc(Misc) = 0xFC,
     SIMD(SIMD) = 0xFD,
     #[cfg(feature = "threads")]
