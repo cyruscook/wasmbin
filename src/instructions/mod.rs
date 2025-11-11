@@ -17,7 +17,7 @@
 use crate::builtins::FloatConst;
 use crate::indices::{FuncId, GlobalId, LabelId, LocalId, MemId, TableId, TypeId};
 use crate::io::{Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin};
-use crate::types::{BlockType, RefType, ValueType};
+use crate::types::{BlockType, HeapType, RefType, ValueType};
 use crate::visit::Visit;
 use thiserror::Error;
 
@@ -359,7 +359,7 @@ pub enum Instruction {
     I64Extend8S = 0xC2,
     I64Extend16S = 0xC3,
     I64Extend32S = 0xC4,
-    RefNull(RefType) = 0xD0,
+    RefNull(HeapType) = 0xD0,
     RefIsNull = 0xD1,
     RefFunc(FuncId) = 0xD2,
     Misc(Misc) = 0xFC,
