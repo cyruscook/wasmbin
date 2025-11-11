@@ -59,7 +59,7 @@ pub struct Module {
 
 impl Encode for Module {
     fn encode(&self, w: &mut impl std::io::Write) -> std::io::Result<()> {
-        unsafe { &*(self as *const Module).cast::<ModuleRepr>() }.encode(w)
+        unsafe { &*(std::ptr::from_ref::<Module>(self)).cast::<ModuleRepr>() }.encode(w)
     }
 }
 

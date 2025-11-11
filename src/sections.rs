@@ -377,10 +377,10 @@ impl Decode for Table {
         // Table without init expression
         let buf = [discriminant1];
         let mut r = std::io::Read::chain(&buf[..], r);
-        return Ok(Self {
+        Ok(Self {
             table_type: TableType::decode(&mut r)?,
             expr: None,
-        });
+        })
     }
 }
 
