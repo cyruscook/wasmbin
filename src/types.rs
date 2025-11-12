@@ -16,9 +16,8 @@
 
 use crate::builtins::WasmbinCountable;
 use crate::indices::TypeId;
-use crate::io::{
-    encode_decode_as, Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin,
-};
+use crate::io::encode_decode_as;
+use crate::io::{Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin};
 use crate::visit::Visit;
 use std::convert::TryFrom;
 use std::fmt::{self, Debug, Formatter};
@@ -128,6 +127,10 @@ pub struct Limits {
     pub min: u64,
     pub max: Option<u64>,
     pub is_64: bool,
+    #[cfg(feature = "threads")]
+    pub is_shared: bool,
+    #[cfg(feature = "custom-page-sizes")]
+    pub page_size: Option<PageSize>,
 }
 
 impl Debug for Limits {
@@ -136,6 +139,14 @@ impl Debug for Limits {
         if let Some(max) = self.max {
             write!(f, "={max}")?;
         }
+        #[cfg(feature = "threads")]
+        if self.is_shared {
+            write!(f, " (shared)")?;
+        }
+        #[cfg(feature = "custom-page-sizes")]
+        if let Some(page_size) = self.page_size {
+            write!(f, " (page size: {page_size:?})")?;
+        }
         Ok(())
     }
 }
@@ -143,12 +154,85 @@ impl Debug for Limits {
 #[derive(Wasmbin)]
 #[repr(u8)]
 enum LimitsRepr {
-    Min { min: u64 } = 0x00,
-    MinMax { min: u64, max: u64 } = 0x01,
-    Min64 { min: u64 } = 0x04,
-    MinMax64 { min: u64, max: u64 } = 0x05,
+    Min {
+        min: u64,
+    } = 0x00,
+    MinMax {
+        min: u64,
+        max: u64,
+    } = 0x01,
+    #[cfg(all(feature = "threads"))]
+    MinShared {
+        min: u64,
+    } = 0x02,
+    #[cfg(all(feature = "threads"))]
+    MinMaxShared {
+        min: u64,
+        max: u64,
+    } = 0x03,
+    Min64 {
+        min: u64,
+    } = 0x04,
+    MinMax64 {
+        min: u64,
+        max: u64,
+    } = 0x05,
+    #[cfg(all(feature = "threads"))]
+    Min64Shared {
+        min: u64,
+    } = 0x06,
+    #[cfg(all(feature = "threads"))]
+    MinMax64Shared {
+        min: u64,
+        max: u64,
+    } = 0x07,
+    #[cfg(all(feature = "custom-page-sizes"))]
+    MinCustom {
+        min: u64,
+        page_size: PageSize,
+    } = 0x08,
+    #[cfg(all(feature = "custom-page-sizes"))]
+    MinMaxCustom {
+        min: u64,
+        max: u64,
+        page_size: PageSize,
+    } = 0x09,
+    #[cfg(all(feature = "custom-page-sizes", feature = "threads"))]
+    MinSharedCustom {
+        min: u64,
+        page_size: PageSize,
+    } = 0x0A,
+    #[cfg(all(feature = "custom-page-sizes", feature = "threads"))]
+    MinMaxSharedCustom {
+        min: u64,
+        max: u64,
+        page_size: PageSize,
+    } = 0x0B,
+    #[cfg(all(feature = "custom-page-sizes"))]
+    Min64Custom {
+        min: u64,
+        page_size: PageSize,
+    } = 0x0C,
+    #[cfg(all(feature = "custom-page-sizes"))]
+    MinMax64Custom {
+        min: u64,
+        max: u64,
+        page_size: PageSize,
+    } = 0x0D,
+    #[cfg(all(feature = "custom-page-sizes", feature = "threads"))]
+    Min64SharedCustom {
+        min: u64,
+        page_size: PageSize,
+    } = 0x0E,
+    #[cfg(all(feature = "custom-page-sizes", feature = "threads"))]
+    MinMax64SharedCustom {
+        min: u64,
+        max: u64,
+        page_size: PageSize,
+    } = 0x0F,
 }
 
+#[cfg(all(not(feature = "threads"), not(feature = "custom-page-sizes")))]
 encode_decode_as!(Limits, {
     (Limits { min, max: None, is_64: false }) <=> (LimitsRepr::Min { min }),
     (Limits { min, max: Some(max), is_64: false }) <=> (LimitsRepr::MinMax { min, max }),
@@ -156,43 +240,49 @@ encode_decode_as!(Limits, {
     (Limits { min, max: Some(max), is_64: true }) <=> (LimitsRepr::MinMax64 { min, max }),
 });
 
-#[cfg(any(feature = "threads", feature = "custom-page-sizes"))]
-#[derive(Wasmbin)]
-#[repr(u8)]
-enum MemTypeRepr {
-    Unshared(LimitsRepr),
-    #[cfg(feature = "threads")]
-    SharedMin {
-        min: u32,
-    } = 0x02,
-    #[cfg(feature = "threads")]
-    SharedMinMax {
-        min: u32,
-        max: u32,
-    } = 0x03,
-    #[cfg(feature = "custom-page-sizes")]
-    UnsharedMinCustom {
-        min: u32,
-        page_size: PageSize,
-    } = 0x08,
-    #[cfg(feature = "custom-page-sizes")]
-    UnsharedMinMaxCustom {
-        min: u32,
-        max: u32,
-        page_size: PageSize,
-    } = 0x09,
-    #[cfg(all(feature = "threads", feature = "custom-page-sizes"))]
-    SharedMinCustom {
-        min: u32,
-        page_size: PageSize,
-    } = 0x0A,
-    #[cfg(all(feature = "threads", feature = "custom-page-sizes"))]
-    SharedMinMaxCustom {
-        min: u32,
-        max: u32,
-        page_size: PageSize,
-    } = 0x0B,
-}
+#[cfg(all(feature = "threads", not(feature = "custom-page-sizes")))]
+encode_decode_as!(Limits, {
+    (Limits { min, max: None, is_64: false, is_shared: false }) <=> (LimitsRepr::Min { min }),
+    (Limits { min, max: Some(max), is_64: false, is_shared: false }) <=> (LimitsRepr::MinMax { min, max }),
+    (Limits { min, max: None, is_64: true, is_shared: false }) <=> (LimitsRepr::Min64 { min }),
+    (Limits { min, max: Some(max), is_64: true, is_shared: false }) <=> (LimitsRepr::MinMax64 { min, max }),
+    (Limits { min, max: None, is_64: false, is_shared: true }) <=> (LimitsRepr::MinShared { min }),
+    (Limits { min, max: Some(max), is_64: false, is_shared: true }) <=> (LimitsRepr::MinMaxShared { min, max }),
+    (Limits { min, max: None, is_64: true, is_shared: true }) <=> (LimitsRepr::Min64Shared { min }),
+    (Limits { min, max: Some(max), is_64: true, is_shared: true }) <=> (LimitsRepr::MinMax64Shared { min, max }),
+});
+
+#[cfg(all(feature = "custom-page-sizes", not(feature = "threads")))]
+encode_decode_as!(Limits, {
+    (Limits { min, max: None, is_64: false, page_size: None }) <=> (LimitsRepr::Min { min }),
+    (Limits { min, max: Some(max), is_64: false, page_size: None }) <=> (LimitsRepr::MinMax { min, max }),
+    (Limits { min, max: None, is_64: true, page_size: None }) <=> (LimitsRepr::Min64 { min }),
+    (Limits { min, max: Some(max), is_64: true, page_size: None }) <=> (LimitsRepr::MinMax64 { min, max }),
+    (Limits { min, max: None, is_64: false, page_size: Some(page_size) }) <=> (LimitsRepr::MinCustom { min, page_size }),
+    (Limits { min, max: Some(max), is_64: false, page_size: Some(page_size) }) <=> (LimitsRepr::MinMaxCustom { min, max, page_size }),
+    (Limits { min, max: None, is_64: true, page_size: Some(page_size) }) <=> (LimitsRepr::Min64Custom { min, page_size }),
+    (Limits { min, max: Some(max), is_64: true, page_size: Some(page_size) }) <=> (LimitsRepr::MinMax64Custom { min, max, page_size }),
+});
+
+#[cfg(all(feature = "custom-page-sizes", feature = "threads"))]
+encode_decode_as!(Limits, {
+    (Limits { min, max: None, is_64: false, is_shared: false, page_size: None }) <=> (LimitsRepr::Min { min }),
+    (Limits { min, max: Some(max), is_64: false, is_shared: false, page_size: None }) <=> (LimitsRepr::MinMax { min, max }),
+    (Limits { min, max: None, is_64: true, is_shared: false, page_size: None }) <=> (LimitsRepr::Min64 { min }),
+    (Limits { min, max: Some(max), is_64: true, is_shared: false, page_size: None }) <=> (LimitsRepr::MinMax64 { min, max }),
+    (Limits { min, max: None, is_64: false, is_shared: true, page_size: None }) <=> (LimitsRepr::MinShared { min }),
+    (Limits { min, max: Some(max), is_64: false, is_shared: true, page_size: None }) <=> (LimitsRepr::MinMaxShared { min, max }),
+    (Limits { min, max: None, is_64: true, is_shared: true, page_size: None }) <=> (LimitsRepr::Min64Shared { min }),
+    (Limits { min, max: Some(max), is_64: true, is_shared: true, page_size: None }) <=> (LimitsRepr::MinMax64Shared { min, max }),
+    (Limits { min, max: None, is_64: false, is_shared: false, page_size: Some(page_size) }) <=> (LimitsRepr::MinCustom { min, page_size }),
+    (Limits { min, max: Some(max), is_64: false, is_shared: false, page_size: Some(page_size) }) <=> (LimitsRepr::MinMaxCustom { min, max, page_size }),
+    (Limits { min, max: None, is_64: true, is_shared: false, page_size: Some(page_size) }) <=> (LimitsRepr::Min64Custom { min, page_size }),
+    (Limits { min, max: Some(max), is_64: true, is_shared: false, page_size: Some(page_size) }) <=> (LimitsRepr::MinMax64Custom { min, max, page_size }),
+    (Limits { min, max: None, is_64: false, is_shared: true, page_size: Some(page_size) }) <=> (LimitsRepr::MinSharedCustom { min, page_size }),
+    (Limits { min, max: Some(max), is_64: false, is_shared: true, page_size: Some(page_size) }) <=> (LimitsRepr::MinMaxSharedCustom { min, max, page_size }),
+    (Limits { min, max: None, is_64: true, is_shared: true, page_size: Some(page_size) }) <=> (LimitsRepr::Min64SharedCustom { min, page_size }),
+    (Limits { min, max: Some(max), is_64: true, is_shared: true, page_size: Some(page_size) }) <=> (LimitsRepr::MinMax64SharedCustom { min, max, page_size }),
+});
 
 #[cfg(feature = "custom-page-sizes")]
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Visit)]
@@ -242,54 +332,10 @@ impl Decode for PageSize {
 }
 
 /// [Memory type](https://webassembly.github.io/spec/core/binary/types.html#memory-types).
-#[cfg_attr(
-    all(not(feature = "threads"), not(feature = "custom-page-sizes")),
-    derive(Wasmbin)
-)]
-#[derive(WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+#[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 pub struct MemType {
-    #[cfg(feature = "custom-page-sizes")]
-    pub page_size: Option<PageSize>,
-    #[cfg(feature = "threads")]
-    pub is_shared: bool,
     pub limits: Limits,
 }
-
-#[cfg(all(feature = "threads", not(feature = "custom-page-sizes")))]
-encode_decode_as!(MemType, {
-    (MemType { is_shared: false, limits: Limits { min, max: None } }) <=> (MemTypeRepr::Unshared(LimitsRepr::Min { min })),
-    (MemType { is_shared: false, limits: Limits { min, max: Some(max) } }) <=> (MemTypeRepr::Unshared(LimitsRepr::MinMax { min, max })),
-    (MemType { is_shared: true, limits: Limits { min, max: None } }) <=> (MemTypeRepr::SharedMin { min }),
-    (MemType { is_shared: true, limits: Limits { min, max: Some(max) } }) <=> (MemTypeRepr::SharedMinMax { min, max }),
-});
-
-#[cfg(all(not(feature = "threads"), feature = "custom-page-sizes"))]
-encode_decode_as!(MemType, {
-    (MemType { page_size: None, limits: Limits { min, max: None } }) <=> (MemTypeRepr::Unshared(LimitsRepr::Min { min })),
-    (MemType { page_size: None, limits: Limits { min, max: Some(max) } }) <=> (MemTypeRepr::Unshared(LimitsRepr::MinMax { min, max })),
-    (MemType { page_size: Some(page_size), limits: Limits { min, max: None } }) <=> (MemTypeRepr::UnsharedMinCustom { min, page_size }),
-    (MemType { page_size: Some(page_size), limits: Limits { min, max: Some(max) } }) <=> (MemTypeRepr::UnsharedMinMaxCustom { min, max, page_size }),
-});
-
-#[cfg(all(feature = "threads", feature = "custom-page-sizes"))]
-encode_decode_as!(MemType, {
-    (MemType { is_shared: false, page_size: None, limits: Limits { min, max: None } })
-        <=> (MemTypeRepr::Unshared(LimitsRepr::Min { min })),
-    (MemType { is_shared: false, page_size: None, limits: Limits { min, max: Some(max) } })
-        <=> (MemTypeRepr::Unshared(LimitsRepr::MinMax { min, max })),
-    (MemType { is_shared: true, page_size: None, limits: Limits { min, max: None } })
-        <=> (MemTypeRepr::SharedMin { min }),
-    (MemType { is_shared: true, page_size: None, limits: Limits { min, max: Some(max) } })
-        <=> (MemTypeRepr::SharedMinMax { min, max }),
-    (MemType { is_shared: false, page_size: Some(page_size), limits: Limits { min, max: None } })
-        <=> (MemTypeRepr::UnsharedMinCustom { min, page_size }),
-    (MemType { is_shared: false, page_size: Some(page_size), limits: Limits { min, max: Some(max) } })
-        <=> (MemTypeRepr::UnsharedMinMaxCustom { min, max, page_size }),
-    (MemType { is_shared: true, page_size: Some(page_size), limits: Limits { min, max: None } })
-        <=> (MemTypeRepr::SharedMinCustom { min, page_size }),
-    (MemType { is_shared: true, page_size: Some(page_size), limits: Limits { min, max: Some(max) } })
-        <=> (MemTypeRepr::SharedMinMaxCustom { min, max, page_size }),
-});
 
 /// [Reference type](https://webassembly.github.io/spec/core/binary/types.html#reference-types).
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
