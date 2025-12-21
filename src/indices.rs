@@ -60,5 +60,4 @@ newtype_id!(LocalId);
 newtype_id!(MemId);
 newtype_id!(TableId);
 newtype_id!(TypeId);
-
 newtype_id!(ExceptionId);
