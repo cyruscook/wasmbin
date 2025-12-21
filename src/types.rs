@@ -438,8 +438,14 @@ pub enum RecursiveType {
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 #[repr(u8)]
 pub enum SubType {
-    FinalSubType(Vec<TypeId>, CompositeType) = 0x4F,
-    SubType(Vec<TypeId>, CompositeType) = 0x50,
+    FinalSubType {
+        super_types: Vec<TypeId>,
+        composite_type: CompositeType,
+    } = 0x4F,
+    SubType {
+        super_types: Vec<TypeId>,
+        composite_type: CompositeType,
+    } = 0x50,
     FinalEmptySubType(CompositeType),
 }
 
@@ -449,7 +455,10 @@ pub enum SubType {
 pub enum CompositeType {
     ArrayType(FieldType) = 0x5E,
     StructType(Vec<FieldType>) = 0x5f,
-    FuncType(Vec<ValueType>, Vec<ValueType>) = 0x60,
+    FuncType {
+        parameters: Vec<ValueType>,
+        results: Vec<ValueType>,
+    } = 0x60,
 }
 
 /// [Field type](https://webassembly.github.io/spec/core/binary/types.html#binary-fieldtype).
