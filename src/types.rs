@@ -165,11 +165,11 @@ enum LimitsRepr {
         min: u64,
         max: u64,
     } = 0x01,
-    #[cfg(all(feature = "threads"))]
+    #[cfg(feature = "threads")]
     MinShared {
         min: u64,
     } = 0x02,
-    #[cfg(all(feature = "threads"))]
+    #[cfg(feature = "threads")]
     MinMaxShared {
         min: u64,
         max: u64,
@@ -181,21 +181,21 @@ enum LimitsRepr {
         min: u64,
         max: u64,
     } = 0x05,
-    #[cfg(all(feature = "threads"))]
+    #[cfg(feature = "threads")]
     Min64Shared {
         min: u64,
     } = 0x06,
-    #[cfg(all(feature = "threads"))]
+    #[cfg(feature = "threads")]
     MinMax64Shared {
         min: u64,
         max: u64,
     } = 0x07,
-    #[cfg(all(feature = "custom-page-sizes"))]
+    #[cfg(feature = "custom-page-sizes")]
     MinCustom {
         min: u64,
         page_size: PageSize,
     } = 0x08,
-    #[cfg(all(feature = "custom-page-sizes"))]
+    #[cfg(feature = "custom-page-sizes")]
     MinMaxCustom {
         min: u64,
         max: u64,
@@ -212,12 +212,12 @@ enum LimitsRepr {
         max: u64,
         page_size: PageSize,
     } = 0x0B,
-    #[cfg(all(feature = "custom-page-sizes"))]
+    #[cfg(feature = "custom-page-sizes")]
     Min64Custom {
         min: u64,
         page_size: PageSize,
     } = 0x0C,
-    #[cfg(all(feature = "custom-page-sizes"))]
+    #[cfg(feature = "custom-page-sizes")]
     MinMax64Custom {
         min: u64,
         max: u64,
