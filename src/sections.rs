@@ -15,14 +15,14 @@
 // limitations under the License.
 
 use crate::builtins::{Blob, Lazy, UnparsedBytes, WasmbinCountable};
-use crate::indices::ExceptionId;
 #[cfg(feature = "extended-name-section")]
 use crate::indices::{DataId, ElemId, LabelId};
-use crate::indices::{FuncId, GlobalId, LocalId, MemId, TableId, TypeId};
+use crate::indices::{ExceptionId, FuncId, GlobalId, LocalId, MemId, TableId, TypeId};
 use crate::instructions::Expression;
 use crate::io::{Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin};
-use crate::types::ExceptionType;
-use crate::types::{GlobalType, MemType, RecursiveType, RefType, TableType, ValueType};
+use crate::types::{
+    ExceptionType, GlobalType, MemType, RecursiveType, RefType, TableType, ValueType,
+};
 use crate::visit::{Visit, VisitError};
 use custom_debug::Debug as CustomDebug;
 use std::convert::TryFrom;
