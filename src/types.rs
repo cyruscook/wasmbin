@@ -139,6 +139,9 @@ impl Debug for Limits {
         if let Some(max) = self.max {
             write!(f, "={max}")?;
         }
+        if self.is_64 {
+            write!(f, "(64)")?;
+        }
         #[cfg(feature = "threads")]
         if self.is_shared {
             write!(f, " (shared)")?;
