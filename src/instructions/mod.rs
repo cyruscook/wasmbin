@@ -162,6 +162,13 @@ pub struct CallIndirect {
     pub table: TableId,
 }
 
+/// Arguments common to [struct instructions](https://webassembly.github.io/spec/core/binary/instructions.html#aggregate-instructions).
+#[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+pub struct StructArg {
+    struct_type: TypeId,
+    index: u32,
+}
+
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 #[repr(u32)]
 pub enum RefTypeOp {
@@ -173,22 +180,10 @@ pub enum RefTypeOp {
     // [Aggregate instructions](https://webassembly.github.io/spec/core/binary/instructions.html#aggregate-instructions).
     StructNew(TypeId) = 0,
     StructNewDefault(TypeId) = 1,
-    StructGet {
-        struct_type: TypeId,
-        index: u32,
-    } = 2,
-    StructGetS {
-        struct_type: TypeId,
-        index: u32,
-    } = 3,
-    StructGetU {
-        struct_type: TypeId,
-        index: u32,
-    } = 4,
-    StructSet {
-        struct_type: TypeId,
-        index: u32,
-    } = 5,
+    StructGet(StructArg) = 2,
+    StructGetS(StructArg) = 3,
+    StructGetU(StructArg) = 4,
+    StructSet(StructArg) = 5,
     ArrayNew(TypeId) = 6,
     ArrayNewDefault(TypeId) = 7,
     ArrayNewFixed {
