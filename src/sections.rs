@@ -341,8 +341,8 @@ pub struct Exception {
 /// A single [table](https://webassembly.github.io/spec/core/binary/modules.html#binary-table).
 #[derive(WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 pub struct Table {
-    table_type: TableType,
-    expr: Option<Expression>,
+    pub table_type: TableType,
+    pub expr: Option<Expression>,
 }
 
 impl Encode for Table {
