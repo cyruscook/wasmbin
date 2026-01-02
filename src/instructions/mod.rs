@@ -165,8 +165,8 @@ pub struct CallIndirect {
 /// Arguments common to [struct instructions](https://webassembly.github.io/spec/core/binary/instructions.html#aggregate-instructions).
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 pub struct StructArg {
-    struct_type: TypeId,
-    index: u32,
+    pub struct_type: TypeId,
+    pub index: u32,
 }
 
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
