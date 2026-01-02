@@ -454,9 +454,9 @@ pub enum SubType {
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 #[repr(u8)]
 pub enum CompositeType {
-    ArrayType(FieldType) = 0x5E,
-    StructType(Vec<FieldType>) = 0x5f,
-    FuncType(FuncType),
+    Array(FieldType) = 0x5E,
+    Struct(Vec<FieldType>) = 0x5f,
+    Func(FuncType),
 }
 
 /// [Field type](https://webassembly.github.io/spec/core/binary/types.html#binary-fieldtype).
