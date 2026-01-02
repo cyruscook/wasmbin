@@ -141,7 +141,7 @@ impl Debug for Limits {
             write!(f, "={max}")?;
         }
         if self.is_64 {
-            write!(f, "(64)")?;
+            write!(f, "_64")?;
         }
         #[cfg(feature = "threads")]
         if self.is_shared {
