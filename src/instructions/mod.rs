@@ -238,8 +238,8 @@ pub enum RefTypeOp {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Visit)]
 pub struct CastOp {
-    from_nullable: bool,
-    to_nullable: bool,
+    pub from_nullable: bool,
+    pub to_nullable: bool,
 }
 
 encode_decode_as!(CastOp, {
