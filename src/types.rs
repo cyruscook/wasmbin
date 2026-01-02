@@ -456,10 +456,7 @@ pub enum SubType {
 pub enum CompositeType {
     ArrayType(FieldType) = 0x5E,
     StructType(Vec<FieldType>) = 0x5f,
-    FuncType {
-        parameters: Vec<ValueType>,
-        results: Vec<ValueType>,
-    } = 0x60,
+    FuncType(FuncType),
 }
 
 /// [Field type](https://webassembly.github.io/spec/core/binary/types.html#binary-fieldtype).
