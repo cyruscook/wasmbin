@@ -20,7 +20,8 @@
     unused_qualifications,
     unused_macros,
     unused_lifetimes,
-    single_use_lifetimes
+    single_use_lifetimes,
+    clippy::partial_pub_fields
 )]
 #![allow(
     clippy::missing_errors_doc,
