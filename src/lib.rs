@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #![cfg_attr(feature = "nightly", feature(doc_cfg))]
-#![cfg_attr(feature = "nightly", doc(auto_cfg))]
 #![warn(
     clippy::all,
     clippy::pedantic,
