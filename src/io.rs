@@ -68,7 +68,7 @@ pub(crate) enum PathItem {
 }
 
 /// Decoding error with attached property path.
-#[allow(clippy::partial_pub_fields)]
+#[expect(clippy::partial_pub_fields)]
 #[derive(Error, Debug)]
 pub struct DecodeError {
     path: Vec<PathItem>,

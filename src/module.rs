@@ -15,7 +15,7 @@
 #![warn(missing_docs)]
 
 use crate::builtins::Blob;
-use crate::io::{encode_decode_as, Decode, DecodeError, DecodeErrorKind, Encode, Wasmbin};
+use crate::io::{Decode, DecodeError, DecodeErrorKind, Encode, Wasmbin, encode_decode_as};
 use crate::sections::{Section, StdPayload};
 use crate::visit::Visit;
 use std::cmp::Ordering;
@@ -182,7 +182,7 @@ impl Module {
     /// });
     /// # Ok(())
     /// # }
-    #[allow(clippy::missing_panics_doc)]
+    #[expect(clippy::missing_panics_doc)]
     pub fn find_or_insert_std_section<T: StdPayload>(
         &mut self,
         insert_callback: impl FnOnce() -> T,

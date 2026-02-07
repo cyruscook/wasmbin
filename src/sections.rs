@@ -408,20 +408,15 @@ pub struct Data {
     pub blob: Vec<u8>,
 }
 
-mod sealed {
-    use super::{Blob, Decode, Encode, Kind, Section};
+pub(crate) trait Payload: Encode + Decode + Into<Section> {
+    const KIND: Kind;
 
-    pub trait Payload: Encode + Decode + Into<Section> {
-        const KIND: Kind;
-
-        fn try_from_ref(section: &Section) -> Option<&Blob<Self>>;
-        fn try_from_mut(section: &mut Section) -> Option<&mut Blob<Self>>;
-        fn try_from(section: Section) -> Result<Blob<Self>, Section>;
-    }
+    fn try_from_ref(section: &Section) -> Option<&Blob<Self>>;
+    fn try_from_mut(section: &mut Section) -> Option<&mut Blob<Self>>;
 }
-use sealed::Payload;
 
 /// A common marker trait for the [standard payloads](payload).
+#[expect(private_bounds)]
 pub trait StdPayload: Payload {}
 
 macro_rules! define_sections {
@@ -449,7 +444,7 @@ macro_rules! define_sections {
             type Error = u8;
 
             fn try_from(discriminant: u8) -> Result<Kind, u8> {
-                #[allow(unused_doc_comments)]
+                #[expect(unused_doc_comments)]
                 Ok(match discriminant {
                     $($(# $attr)* $disc => Kind::$name,)*
                     _ => return Err(discriminant),
@@ -473,7 +468,7 @@ macro_rules! define_sections {
 
                 impl From<Kind> for OrderedRepr {
                     fn from(kind: Kind) -> Self {
-                        #[allow(unused_doc_comments)]
+                        #[expect(unused_doc_comments)]
                         match kind {
                             $($(# $attr)* Kind::$name => Self::$name,)*
                         }
@@ -519,32 +514,25 @@ macro_rules! define_sections {
                         _ => None,
                     }
                 }
-
-                fn try_from(section: Section) -> Result<Blob<Self>, Section> {
-                    match section {
-                        Section::$name(res) => Ok(res),
-                        _ => Err(section),
-                    }
-                }
             }
         };)*
 
         impl Section {
             /// Get the kind of the section without its payload.
             pub fn kind(&self) -> Kind {
-                #[allow(unused_doc_comments)]
+                #[expect(unused_doc_comments)]
                 match self {
                     $($(# $attr)* Section::$name(_) => Kind::$name,)*
                 }
             }
 
             /// Try to interpret the section as a specific payload.
-            pub fn try_as<T: Payload>(&self) -> Option<&Blob<T>> {
+            pub fn try_as<T: StdPayload>(&self) -> Option<&Blob<T>> {
                 T::try_from_ref(self)
             }
 
             /// Try to interpret the section as a specific payload mutably.
-            pub fn try_as_mut<T: Payload>(&mut self) -> Option<&mut Blob<T>> {
+            pub fn try_as_mut<T: StdPayload>(&mut self) -> Option<&mut Blob<T>> {
                 T::try_from_mut(self)
             }
         }

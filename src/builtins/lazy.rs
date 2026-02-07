@@ -24,7 +24,7 @@ use std::hash::Hash;
 /// Unlike `Vec<u8>`, these raw bytes are not length-prefixed when encoded.
 #[derive(Default, CustomDebug, Clone, PartialEq, Eq, Hash, Visit)]
 pub struct UnparsedBytes {
-    #[allow(missing_docs)]
+    #[expect(missing_docs)]
     #[debug(with = "custom_debug::hexbuf_str")]
     pub bytes: Vec<u8>,
 }
@@ -206,11 +206,9 @@ impl<T: Decode + PartialEq> PartialEq for Lazy<T> {
     fn eq(&self, other: &Self) -> bool {
         if let (LazyStatus::FromInput { raw: raw1, .. }, LazyStatus::FromInput { raw: raw2, .. }) =
             (&self.status, &other.status)
-        {
-            if raw1 == raw2 {
+            && raw1 == raw2 {
                 return true;
             }
-        }
         if let (Ok(value1), Ok(value2)) = (self.try_contents(), other.try_contents()) {
             return value1 == value2;
         }

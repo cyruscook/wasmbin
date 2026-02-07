@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate proc_macro;
-
 use quote::{quote, ToTokens};
 use std::borrow::Cow;
 use synstructure::{decl_derive, Structure, VariantInfo};
@@ -105,7 +103,7 @@ fn track_err_in_variant(
 
     let mut variant_name = String::new();
     if let Some(prefix) = v.prefix {
-        write!(variant_name, "{}::", prefix).unwrap();
+        write!(variant_name, "{prefix}::").unwrap();
     }
     write!(variant_name, "{}", v.ast().ident).unwrap();
 

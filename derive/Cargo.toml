@@ -1,11 +1,12 @@
 [package]
 name = "wasmbin-derive"
-version = "0.2.3"
-authors = ["Ingvar Stepanyan <me@rreverser.com>"]
-edition = "2018"
-license = "Apache-2.0"
 description = "Derive crate for the wasmbin library"
-repository = "https://github.com/RReverser/wasmbin"
+version = "0.2.3"
+
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [lib]
 proc-macro = true
@@ -15,4 +16,7 @@ synstructure = "0.13.2"
 quote = "1.0.40"
 proc-macro2 = "1.0.95"
 syn = "2.0.101"
-thiserror = "2.0.12"
+thiserror.workspace = true
+
+[lints]
+workspace = true

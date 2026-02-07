@@ -35,7 +35,7 @@ pub enum VisitError<E> {
 
 impl<E> VisitError<E> {
     pub(crate) fn in_path(self, item: PathItem) -> Self {
-        #[allow(clippy::match_wildcard_for_single_variants)]
+        #[expect(clippy::match_wildcard_for_single_variants)]
         match self {
             VisitError::LazyDecode(err) => VisitError::LazyDecode(err.in_path(item)),
             err => err,
@@ -52,12 +52,8 @@ impl From<VisitError<Infallible>> for DecodeError {
     }
 }
 
-mod sealed {
-    pub trait Sealed {}
-}
-
 /// A trait for results that can be returned from a visitor.
-pub trait VisitResult: sealed::Sealed {
+pub trait VisitResult {
     /// The error type of the result.
     type Error;
 
@@ -65,7 +61,6 @@ pub trait VisitResult: sealed::Sealed {
     fn into_result(self) -> Result<(), Self::Error>;
 }
 
-impl sealed::Sealed for () {}
 impl VisitResult for () {
     type Error = Infallible;
 
@@ -74,7 +69,6 @@ impl VisitResult for () {
     }
 }
 
-impl sealed::Sealed for bool {}
 impl VisitResult for bool {
     type Error = ();
 
@@ -86,7 +80,6 @@ impl VisitResult for bool {
     }
 }
 
-impl<E> sealed::Sealed for Result<(), E> {}
 impl<E> VisitResult for Result<(), E> {
     type Error = E;
 
