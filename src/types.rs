@@ -361,7 +361,8 @@ impl Encode for HeapType {
     fn encode(&self, w: &mut impl std::io::Write) -> std::io::Result<()> {
         match self {
             HeapType::Abstract(abs_ty) => abs_ty.encode(w),
-            HeapType::TypeIndex(type_id) => type_id.encode(w),
+            // Heap type indices are encoded as s33
+            HeapType::TypeIndex(type_id) => i64::from(type_id.index).encode(w),
         }
     }
 }
