@@ -17,7 +17,7 @@
 use crate::builtins::FloatConst;
 use crate::indices::{DataId, ElemId, FuncId, GlobalId, LabelId, LocalId, MemId, TableId, TypeId};
 use crate::io::{
-    encode_decode_as, Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin,
+    Decode, DecodeError, DecodeWithDiscriminant, Encode, PathItem, Wasmbin, encode_decode_as,
 };
 use crate::types::{BlockType, HeapType, ValueType};
 use crate::visit::Visit;

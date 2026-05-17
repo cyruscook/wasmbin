@@ -16,10 +16,10 @@ use anyhow::Context;
 use clap::{Parser, Subcommand};
 use std::fs::File;
 use std::io::{BufReader, Seek};
+use wasmbin::Module;
 use wasmbin::io::DecodeError;
 use wasmbin::sections::{Kind, Section};
 use wasmbin::visit::{Visit, VisitError};
-use wasmbin::Module;
 
 #[derive(Subcommand)]
 enum DumpSection {

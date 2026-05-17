@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use quote::{quote, ToTokens};
+use quote::{ToTokens, quote};
 use std::borrow::Cow;
-use synstructure::{decl_derive, Structure, VariantInfo};
+use synstructure::{Structure, VariantInfo, decl_derive};
 
 macro_rules! syn_throw {
     ($err:expr) => {

@@ -1,7 +1,7 @@
 use super::Instruction;
 use crate::builtins::WasmbinCountable;
 use crate::indices::{ExceptionId, LabelId};
-use crate::io::{encode_decode_as, Wasmbin};
+use crate::io::{Wasmbin, encode_decode_as};
 use crate::types::BlockType;
 use crate::visit::Visit;
 
