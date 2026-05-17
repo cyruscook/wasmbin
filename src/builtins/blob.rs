@@ -15,6 +15,8 @@
 use crate::builtins::{Lazy, UnparsedBytes, WasmbinCountable};
 use crate::io::{Decode, DecodeError, DecodeErrorKind, Encode};
 use crate::visit::Visit;
+#[cfg(feature = "wasm-bindgen")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 impl Encode for [u8] {
     fn encode(&self, w: &mut impl std::io::Write) -> std::io::Result<()> {
@@ -87,6 +89,32 @@ impl<T: Decode> Decode for Blob<T> {
 }
 
 impl<T: Decode + WasmbinCountable> WasmbinCountable for Blob<T> {}
+
+#[cfg(feature = "wasm-bindgen")]
+impl<T> Serialize for Blob<T>
+where
+    T: Decode + Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.contents.serialize(serializer)
+    }
+}
+
+#[cfg(feature = "wasm-bindgen")]
+impl<'de, T> Deserialize<'de> for Blob<T>
+where
+    T: Decode + Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Lazy::<T>::deserialize(deserializer).map(|contents| Self { contents })
+    }
+}
 
 impl<T: Decode> From<T> for Blob<T> {
     fn from(value: T) -> Self {

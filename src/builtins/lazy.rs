@@ -17,12 +17,16 @@ use crate::io::{Decode, DecodeError, DecodeErrorKind, Encode};
 use crate::visit::{Visit, VisitError};
 use custom_debug::Debug as CustomDebug;
 use once_cell::sync::OnceCell;
+#[cfg(feature = "wasm-bindgen")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::hash::Hash;
 
 /// A storage for unparsed bytes.
 ///
 /// Unlike `Vec<u8>`, these raw bytes are not length-prefixed when encoded.
 #[derive(Default, CustomDebug, Clone, PartialEq, Eq, Hash, Visit)]
+#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "wasm-bindgen", serde(transparent))]
 pub struct UnparsedBytes {
     #[expect(missing_docs)]
     #[debug(with = "custom_debug::hexbuf_str")]
@@ -226,6 +230,34 @@ impl<T: Decode + Hash> Hash for Lazy<T> {
 }
 
 impl<T: WasmbinCountable> WasmbinCountable for Lazy<T> {}
+
+#[cfg(feature = "wasm-bindgen")]
+impl<T> Serialize for Lazy<T>
+where
+    T: Decode + Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.try_contents()
+            .map_err(serde::ser::Error::custom)?
+            .serialize(serializer)
+    }
+}
+
+#[cfg(feature = "wasm-bindgen")]
+impl<'de, T> Deserialize<'de> for Lazy<T>
+where
+    T: Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        T::deserialize(deserializer).map(Self::from)
+    }
+}
 
 impl<T: Decode + Visit> Visit for Lazy<T> {
     fn visit_children<'a, VisitT: 'static, E, F: FnMut(&'a VisitT) -> Result<(), E>>(

@@ -38,5 +38,7 @@ mod module;
 pub mod sections;
 pub mod types;
 pub mod visit;
+#[cfg(feature = "wasm-bindgen")]
+pub mod wasm;
 
 pub use module::Module;
