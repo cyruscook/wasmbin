@@ -206,9 +206,10 @@ impl<T: Decode + PartialEq> PartialEq for Lazy<T> {
     fn eq(&self, other: &Self) -> bool {
         if let (LazyStatus::FromInput { raw: raw1, .. }, LazyStatus::FromInput { raw: raw2, .. }) =
             (&self.status, &other.status)
-            && raw1 == raw2 {
-                return true;
-            }
+            && raw1 == raw2
+        {
+            return true;
+        }
         if let (Ok(value1), Ok(value2)) = (self.try_contents(), other.try_contents()) {
             return value1 == value2;
         }

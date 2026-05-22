@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use std::fs::File;
 use std::hint::black_box;
 use tempfile::tempfile;
+use wasmbin::Module;
 use wasmbin::io::DecodeError;
 use wasmbin::visit::{Visit, VisitError};
-use wasmbin::Module;
 
 fn deep_module() -> Module {
     use wasmbin::builtins::Blob;
@@ -34,11 +34,13 @@ fn deep_module() -> Module {
         expr.push(Instruction::End);
     }
     Module {
-        sections: vec![vec![Blob::from(FuncBody {
-            locals: Default::default(),
-            expr,
-        })]
-        .into()],
+        sections: vec![
+            vec![Blob::from(FuncBody {
+                locals: Default::default(),
+                expr,
+            })]
+            .into(),
+        ],
     }
 }
 

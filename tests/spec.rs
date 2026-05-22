@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use fs_err::{read_dir, read_to_string};
 use indexmap::IndexMap;
-use libtest_mimic::{run as run_tests, Arguments, Failed, Trial};
+use libtest_mimic::{Arguments, Failed, Trial, run as run_tests};
 use rayon::prelude::*;
 use std::path::Path;
 use std::sync::Arc;
+use wasmbin::Module;
 use wasmbin::io::DecodeError;
 use wasmbin::visit::{Visit, VisitError};
-use wasmbin::Module;
 use wast::lexer::Lexer;
-use wast::parser::{parse, ParseBuffer};
+use wast::parser::{ParseBuffer, parse};
 use wast::{QuoteWat, Wast};
 
 const IGNORED_ERRORS: &[&str] = &[
@@ -198,8 +198,14 @@ fn unlazify<T: Visit>(mut wasm: T) -> Result<T, DecodeError> {
 
 fn run_test(mut test_module: &[u8], expect_result: Result<(), String>) -> Result<()> {
     let orig_test_module = test_module;
-    let module = match (Module::decode_from(&mut test_module).and_then(unlazify), &expect_result) {
-        (Ok(ref module), Err(err)) => bail!("Expected an invalid module definition with an error: {err}\nParsed part: {parsed_part:02X?}\nGot module: {module:#?}", parsed_part = &orig_test_module[..orig_test_module.len() - test_module.len()]),
+    let module = match (
+        Module::decode_from(&mut test_module).and_then(unlazify),
+        &expect_result,
+    ) {
+        (Ok(ref module), Err(err)) => bail!(
+            "Expected an invalid module definition with an error: {err}\nParsed part: {parsed_part:02X?}\nGot module: {module:#?}",
+            parsed_part = &orig_test_module[..orig_test_module.len() - test_module.len()]
+        ),
         (Err(err), Ok(())) => bail!(
             "Error: {err:#}\nExpected a valid module definition, but got an error\nModule: {orig_test_module:#02X?}"
         ),
