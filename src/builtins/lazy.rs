@@ -18,7 +18,7 @@ use crate::visit::{Visit, VisitError};
 use custom_debug::Debug as CustomDebug;
 use once_cell::sync::OnceCell;
 #[cfg(feature = "serde")]
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize, Serializer};
 use std::hash::Hash;
 
 /// A storage for unparsed bytes.
@@ -96,6 +96,8 @@ enum LazyStatus<T> {
 /// and if so, re-encode it. Otherwise it will do a cheap copy of the original
 /// raw bytes.
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize))]
+#[cfg_attr(feature = "serde", serde(from = "T"))]
 pub struct Lazy<T> {
     status: LazyStatus<T>,
 }
@@ -243,19 +245,6 @@ where
         self.try_contents()
             .map_err(serde::ser::Error::custom)?
             .serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, T> Deserialize<'de> for Lazy<T>
-where
-    T: Deserialize<'de>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        T::deserialize(deserializer).map(Self::from)
     }
 }
 
