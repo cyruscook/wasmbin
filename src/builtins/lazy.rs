@@ -17,7 +17,7 @@ use crate::io::{Decode, DecodeError, DecodeErrorKind, Encode};
 use crate::visit::{Visit, VisitError};
 use custom_debug::Debug as CustomDebug;
 use once_cell::sync::OnceCell;
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::hash::Hash;
 
@@ -25,8 +25,8 @@ use std::hash::Hash;
 ///
 /// Unlike `Vec<u8>`, these raw bytes are not length-prefixed when encoded.
 #[derive(Default, CustomDebug, Clone, PartialEq, Eq, Hash, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "wasm-bindgen", serde(transparent))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(transparent))]
 pub struct UnparsedBytes {
     #[expect(missing_docs)]
     #[debug(with = "custom_debug::hexbuf_str")]
@@ -231,7 +231,7 @@ impl<T: Decode + Hash> Hash for Lazy<T> {
 
 impl<T: WasmbinCountable> WasmbinCountable for Lazy<T> {}
 
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(feature = "serde")]
 impl<T> Serialize for Lazy<T>
 where
     T: Decode + Serialize,
@@ -246,7 +246,7 @@ where
     }
 }
 
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(feature = "serde")]
 impl<'de, T> Deserialize<'de> for Lazy<T>
 where
     T: Deserialize<'de>,

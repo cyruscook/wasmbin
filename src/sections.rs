@@ -25,7 +25,7 @@ use crate::types::{
 };
 use crate::visit::{Visit, VisitError};
 use custom_debug::Debug as CustomDebug;
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -34,7 +34,7 @@ use thiserror::Error;
 ///
 /// Might also be used to represent an [indirect name association](https://webassembly.github.io/spec/core/appendix/custom.html#binary-indirectnamemap).
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct NameAssoc<I, V = String> {
     pub index: I,
     pub value: V,
@@ -44,7 +44,7 @@ impl<I, V> WasmbinCountable for NameAssoc<I, V> {}
 
 /// [Name map](https://webassembly.github.io/spec/core/appendix/custom.html#binary-namemap).
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct NameMap<I, V = String> {
     pub items: Vec<NameAssoc<I, V>>,
 }
@@ -54,7 +54,7 @@ pub type IndirectNameMap<I1, I2> = NameMap<I1, NameMap<I2>>;
 
 /// [Name subsection](https://webassembly.github.io/spec/core/appendix/custom.html#subsections).
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
 pub enum NameSubSection {
     /// [Module name](https://webassembly.github.io/spec/core/appendix/custom.html#module-names).
@@ -111,7 +111,7 @@ impl Decode for Vec<NameSubSection> {
 
 /// [`producer`](https://github.com/WebAssembly/tool-conventions/blob/08bacbed7d0daff49808370cd93b6a6f0c962d76/ProducersSection.md#custom-section) field.
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct ProducerField {
     pub name: String,
     pub values: Vec<ProducerVersionedName>,
@@ -119,7 +119,7 @@ pub struct ProducerField {
 
 /// [`producer`](https://github.com/WebAssembly/tool-conventions/blob/08bacbed7d0daff49808370cd93b6a6f0c962d76/ProducersSection.md#custom-section) `versioned-name` structure.
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct ProducerVersionedName {
     pub name: String,
     pub version: String,
@@ -129,7 +129,7 @@ pub struct ProducerVersionedName {
 ///
 /// Used to represent custom sections with unknown semantics.
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct RawCustomSection {
     pub name: String,
     pub data: UnparsedBytes,
@@ -143,7 +143,7 @@ macro_rules! define_custom_sections {
         /// as non-exhaustive to allow for future additions that would transform some sections
         /// currently represented by the [`Other`](CustomSection::Other) variant into new variants.
         #[derive(Debug, PartialEq, Eq, Hash, Clone)]
-        #[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+        #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
         #[non_exhaustive]
         pub enum CustomSection {
             $(
@@ -236,7 +236,7 @@ define_custom_sections! {
 
 /// [Import descriptor](https://webassembly.github.io/spec/core/binary/modules.html#binary-importdesc).
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
 pub enum ImportDesc {
     Func(TypeId) = 0x00,
@@ -248,7 +248,7 @@ pub enum ImportDesc {
 
 /// [Import](https://webassembly.github.io/spec/core/binary/modules.html#import-section) path.
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct ImportPath {
     pub module: String,
     pub name: String,
@@ -256,7 +256,7 @@ pub struct ImportPath {
 
 /// A single [import](https://webassembly.github.io/spec/core/binary/modules.html#binary-import).
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Import {
     pub path: ImportPath,
     pub desc: ImportDesc,
@@ -264,7 +264,7 @@ pub struct Import {
 
 /// A single [global](https://webassembly.github.io/spec/core/binary/modules.html#binary-global).
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Global {
     pub ty: GlobalType,
     pub init: Expression,
@@ -272,7 +272,7 @@ pub struct Global {
 
 /// [Export descriptor](https://webassembly.github.io/spec/core/binary/modules.html#binary-exportdesc).
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
 pub enum ExportDesc {
     Func(FuncId) = 0x00,
@@ -284,7 +284,7 @@ pub enum ExportDesc {
 
 /// A single [export](https://webassembly.github.io/spec/core/binary/modules.html#binary-export).
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Export {
     pub name: String,
     pub desc: ExportDesc,
@@ -292,7 +292,7 @@ pub struct Export {
 
 /// [Element kind](https://webassembly.github.io/spec/core/binary/modules.html#binary-elemkind).
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
 pub enum ElemKind {
     FuncRef = 0x00,
@@ -300,7 +300,7 @@ pub enum ElemKind {
 
 /// A single [element](https://webassembly.github.io/spec/core/binary/modules.html#binary-elem).
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u32)]
 pub enum Element {
     ActiveWithFuncs {
@@ -343,7 +343,7 @@ pub enum Element {
 
 /// Number of repeated consecutive [locals](https://webassembly.github.io/spec/core/binary/modules.html#binary-local) of a single type.
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Locals {
     pub repeat: u32,
     pub ty: ValueType,
@@ -351,7 +351,7 @@ pub struct Locals {
 
 /// [Exception tag](https://webassembly.github.io/exception-handling/core/binary/modules.html#exception-section).
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[wasmbin(discriminant = 0x00)]
 pub struct Exception {
     pub ty: TypeId,
@@ -359,7 +359,7 @@ pub struct Exception {
 
 /// A single [table](https://webassembly.github.io/spec/core/binary/modules.html#binary-table).
 #[derive(WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Table {
     pub table_type: TableType,
     pub expr: Option<Expression>,
@@ -406,7 +406,7 @@ impl Decode for Table {
 
 /// [Function body](https://webassembly.github.io/spec/core/binary/modules.html#binary-func).
 #[derive(Wasmbin, WasmbinCountable, Debug, Default, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct FuncBody {
     pub locals: Vec<Locals>,
     pub expr: Expression,
@@ -414,7 +414,7 @@ pub struct FuncBody {
 
 /// [`Data`] segment initialization.
 #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u32)]
 pub enum DataInit {
     Active { offset: Expression } = 0,
@@ -424,7 +424,7 @@ pub enum DataInit {
 
 /// [Data segment](https://webassembly.github.io/spec/core/binary/modules.html#binary-data).
 #[derive(Wasmbin, WasmbinCountable, CustomDebug, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Data {
     pub init: DataInit,
     #[debug(with = "custom_debug::hexbuf_str")]
@@ -451,7 +451,7 @@ macro_rules! define_sections {
 
         /// [Module section](https://webassembly.github.io/spec/core/binary/modules.html#sections).
         #[derive(Wasmbin, Debug, PartialEq, Eq, Hash, Clone, Visit)]
-        #[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+        #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
         #[repr(u8)]
         pub enum Section {
             $($(# $attr)* $name($(# $ty_attr)* Blob<payload::$name>) = $disc,)*

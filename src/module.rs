@@ -18,7 +18,7 @@ use crate::builtins::Blob;
 use crate::io::{Decode, DecodeError, DecodeErrorKind, Encode, Wasmbin, encode_decode_as};
 use crate::sections::{Section, StdPayload};
 use crate::visit::Visit;
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
@@ -45,7 +45,7 @@ struct ModuleRepr {
 /// Unless you're doing something very specific, this will be your entry point to the library as it
 /// represents the module as a whole. Check out its fields for nested structures.
 #[derive(Debug, Default, PartialEq, Eq, Hash, Clone, Visit)]
-#[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Module {
     /// Module [sections](https://webassembly.github.io/spec/core/binary/modules.html#sections).
     ///

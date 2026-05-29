@@ -15,7 +15,7 @@
 use crate::builtins::{Lazy, UnparsedBytes, WasmbinCountable};
 use crate::io::{Decode, DecodeError, DecodeErrorKind, Encode};
 use crate::visit::Visit;
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 impl Encode for [u8] {
@@ -90,7 +90,7 @@ impl<T: Decode> Decode for Blob<T> {
 
 impl<T: Decode + WasmbinCountable> WasmbinCountable for Blob<T> {}
 
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(feature = "serde")]
 impl<T> Serialize for Blob<T>
 where
     T: Decode + Serialize,
@@ -103,7 +103,7 @@ where
     }
 }
 
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(feature = "serde")]
 impl<'de, T> Deserialize<'de> for Blob<T>
 where
     T: Decode + Deserialize<'de>,

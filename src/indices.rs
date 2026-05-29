@@ -17,14 +17,14 @@
 use crate::builtins::WasmbinCountable;
 use crate::io::Wasmbin;
 use crate::visit::Visit;
-#[cfg(feature = "wasm-bindgen")]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 macro_rules! newtype_id {
     ($name:ident) => {
         #[derive(PartialEq, Eq, Clone, Copy, Wasmbin, WasmbinCountable, Hash, Visit)]
-        #[cfg_attr(feature = "wasm-bindgen", derive(Serialize, Deserialize))]
-        #[cfg_attr(feature = "wasm-bindgen", serde(transparent))]
+        #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+        #[cfg_attr(feature = "serde", serde(transparent))]
         #[repr(transparent)]
         pub struct $name {
             pub index: u32,
