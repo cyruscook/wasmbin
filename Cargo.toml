@@ -38,10 +38,12 @@ default = []
 proposals = [
     "extended-name-section",
     "threads",
+    "compact-import-section",
     "custom-page-sizes",
 ]
 extended-name-section = []
 threads = []
+compact-import-section = []
 custom-page-sizes = []
 nightly = []
 serde = ["dep:serde", "dep:serde_bytes"]

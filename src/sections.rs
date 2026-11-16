@@ -262,6 +262,137 @@ pub struct Import {
     pub desc: ImportDesc,
 }
 
+/// An encoded import-section entry, representing one import or a compact group.
+///
+/// The import section counts entries, not the number of imports within them.
+/// Encoding preserves the selected variant, including empty compact groups.
+#[derive(WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum ImportGroup {
+    /// An ordinary import, including imports with an empty item name.
+    Single(Import),
+    /// Imports sharing a module name (compact encoding 1, `0x7f`).
+    #[cfg(feature = "compact-import-section")]
+    Compact {
+        module: String,
+        items: Vec<ImportItem>,
+    },
+    /// Imports sharing a module name and descriptor (compact encoding 2, `0x7e`).
+    /// Visitors visit the shared descriptor once, even for an empty group.
+    #[cfg(feature = "compact-import-section")]
+    CompactSameType {
+        module: String,
+        desc: ImportDesc,
+        names: Vec<String>,
+    },
+}
+
+/// A named import within a compact group sharing a module name.
+#[cfg(feature = "compact-import-section")]
+#[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct ImportItem {
+    pub name: String,
+    pub desc: ImportDesc,
+}
+
+impl From<Import> for ImportGroup {
+    fn from(import: Import) -> Self {
+        Self::Single(import)
+    }
+}
+
+impl ImportGroup {
+    /// The module name shared by all imports in this entry.
+    pub fn module(&self) -> &str {
+        match self {
+            Self::Single(import) => &import.path.module,
+            #[cfg(feature = "compact-import-section")]
+            Self::Compact { module, .. } | Self::CompactSameType { module, .. } => module,
+        }
+    }
+
+    /// Mutably access the module name shared by all imports in this entry.
+    pub fn module_mut(&mut self) -> &mut String {
+        match self {
+            Self::Single(import) => &mut import.path.module,
+            #[cfg(feature = "compact-import-section")]
+            Self::Compact { module, .. } | Self::CompactSameType { module, .. } => module,
+        }
+    }
+}
+
+impl Encode for ImportGroup {
+    fn encode(&self, w: &mut impl std::io::Write) -> std::io::Result<()> {
+        match self {
+            Self::Single(import) => import.encode(w),
+            #[cfg(feature = "compact-import-section")]
+            Self::Compact { module, items } => {
+                module.encode(w)?;
+                "".encode(w)?;
+                0x7fu8.encode(w)?;
+                items.encode(w)
+            }
+            #[cfg(feature = "compact-import-section")]
+            Self::CompactSameType {
+                module,
+                desc,
+                names,
+            } => {
+                module.encode(w)?;
+                "".encode(w)?;
+                0x7eu8.encode(w)?;
+                desc.encode(w)?;
+                names.encode(w)
+            }
+        }
+    }
+}
+
+impl Decode for ImportGroup {
+    fn decode(r: &mut impl std::io::Read) -> Result<Self, DecodeError> {
+        let path = ImportPath::decode(r).map_err(|err| err.in_path(PathItem::Name("path")))?;
+        let discriminant = u8::decode(r).map_err(|err| err.in_path(PathItem::Name("desc")))?;
+        #[cfg(feature = "compact-import-section")]
+        if path.name.is_empty() {
+            match discriminant {
+                0x7f => {
+                    let items = Vec::decode(r).map_err(|err| {
+                        err.in_path(PathItem::Name("items"))
+                            .in_path(PathItem::Variant("ImportGroup::Compact"))
+                    })?;
+                    return Ok(Self::Compact {
+                        module: path.module,
+                        items,
+                    });
+                }
+                0x7e => {
+                    return (|| {
+                        let desc = ImportDesc::decode(r)
+                            .map_err(|err| err.in_path(PathItem::Name("desc")))?;
+                        let names =
+                            Vec::decode(r).map_err(|err| err.in_path(PathItem::Name("names")))?;
+                        Ok(Self::CompactSameType {
+                            module: path.module,
+                            desc,
+                            names,
+                        })
+                    })()
+                    .map_err(|err: DecodeError| {
+                        err.in_path(PathItem::Variant("ImportGroup::CompactSameType"))
+                    });
+                }
+                _ => {}
+            }
+        }
+        let desc = ImportDesc::decode_with_discriminant(discriminant, r).map_err(|err| {
+            err.in_path(PathItem::Name("desc"))
+                .in_path(PathItem::Variant("ImportGroup::Single"))
+        })?;
+        Ok(Self::Single(Import { path, desc }))
+    }
+}
+
 /// A single [global](https://webassembly.github.io/spec/core/binary/modules.html#binary-global).
 #[derive(Wasmbin, WasmbinCountable, Debug, PartialEq, Eq, Hash, Clone, Visit)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -576,7 +707,7 @@ define_sections! {
     /// [Type section](https://webassembly.github.io/spec/core/binary/modules.html#type-section).
     Type(Vec<super::RecursiveType>) = 1,
     /// [Import section](https://webassembly.github.io/spec/core/binary/modules.html#import-section).
-    Import(Vec<super::Import>) = 2,
+    Import(Vec<super::ImportGroup>) = 2,
     /// [Function section](https://webassembly.github.io/spec/core/binary/modules.html#function-section).
     Function(Vec<super::TypeId>) = 3,
     /// [Table section](https://webassembly.github.io/spec/core/binary/modules.html#table-section).

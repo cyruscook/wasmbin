@@ -126,7 +126,7 @@ impl Module {
     /// # let module = Module::default();
     /// if let Some(imports) = module.find_std_section::<payload::Import>() {
     ///    for import in imports.try_contents()? {
-    ///       println!("Module imports a {:?} from {}.{}", import.desc, import.path.module, import.path.name);
+    ///       println!("Import entry from {}: {import:?}", import.module());
     ///   }
     /// }
     /// # Ok(())
@@ -148,8 +148,8 @@ impl Module {
     /// if let Some(imports) = module.find_std_section_mut::<payload::Import>() {
     ///    for import in imports.try_contents_mut()? {
     ///         // Compress references to the "env" module.
-    ///         if import.path.module == "env" {
-    ///             import.path.module = "a".to_owned();
+    ///         if import.module() == "env" {
+    ///             *import.module_mut() = "a".to_owned();
     ///        }
     ///   }
     /// }
@@ -182,7 +182,7 @@ impl Module {
     ///         name: "my_func".to_owned(),
     ///     },
     ///     desc: ImportDesc::Func(TypeId::from(42)),
-    /// });
+    /// }.into());
     /// # Ok(())
     /// # }
     #[expect(clippy::missing_panics_doc)]

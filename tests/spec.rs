@@ -162,6 +162,7 @@ impl Tests {
         }
 
         read_proposal_tests!(? "threads");
+        read_proposal_tests!(? "compact-import-section");
         read_proposal_tests!(? "custom-page-sizes");
 
         ensure!(
@@ -213,7 +214,7 @@ fn run_test(mut test_module: &[u8], expect_result: Result<(), String>) -> Result
         (Err(_), Err(_)) => return Ok(()),
     };
     let out = module.encode_into(Vec::new())?;
-    if out != test_module {
+    if out != orig_test_module {
         // In the rare case that binary representation doesn't match, it
         // might be because the test uses longer LEB128 form than
         // required. Verify that at least decoding it back produces the

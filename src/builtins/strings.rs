@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::builtins::WasmbinCountable;
 use crate::io::{Decode, DecodeError, Encode};
 use crate::visit::Visit;
 
@@ -34,3 +35,5 @@ impl Decode for String {
 }
 
 impl Visit for String {}
+
+impl WasmbinCountable for String {}

@@ -27,6 +27,8 @@ jobs:
       run: cargo +nightly fmt --all -- --check
     - name: Run tests without features
       run: cargo +stable test -- -q
+    - name: Run tests with compact imports alone
+      run: cargo +stable test --features=compact-import-section -- -q
     - name: Run tests with features enabled
       run: cargo +stable test --features=proposals,serde -- -q
     - name: Run `clippy check`
